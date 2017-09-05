@@ -54,6 +54,7 @@ ifeq ($(unixOS),Linux)
  linux := $(shell (lsb_release -si))
  tiniscut =$(subst /, , $(MODULEPATH))
  tinis :=$(word 2, $(tiniscut))
+ orac :=$(word 2, $(tiniscut))
 
   ifeq ($(linux),SUSE LINUX) #CSC machines
    HPC := $(shell expr substr $(shell uname -n) 1 3)
@@ -156,6 +157,21 @@ ifeq ($(unixOS),Linux)
   F90FLAGS = $(GLOBALgfortranF90FLAGS) -fcray-pointer -fexternal-blas
   F77FLAGS = $(GLOBALgfortranF90FLAGS)
 
+ else ifeq ($(orac),orac) #orac hpc
+   $(info Compiling on orac)
+   $(info please run: module load intel impi imkl FFTW)
+
+   F90 = mpiifort
+   FC = ifort -fixed
+   F90FLAGS = -132 -r8 -u -C -g -traceback -check noarg_temp_created #debug
+   #F90FLAGS = -132 -r8 -u -g -p #profiling
+   F77FLAGS = -r8 #debug
+
+   LIBFLAGS= \
+   -mkl -mkl=cluster -qopenmp -I${MKLROOT}/include/intel64/ilp64 -I${MKLROOT}/include -lfftw3
+
+   INCLUDEDIR= #/hpcwarwick/mathlib/gnu/lib 
+
  else #default or tinis
 
   ifeq ($(tinis),tinis) #tinis hpc
@@ -172,6 +188,7 @@ ifeq ($(unixOS),Linux)
    -mkl -mkl=cluster -qopenmp -I${MKLROOT}/include/intel64/ilp64 -I${MKLROOT}/include -lfftw3
 
    INCLUDEDIR= #/hpcwarwick/mathlib/gnu/lib
+
 
    else #default
 
