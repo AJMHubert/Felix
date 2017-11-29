@@ -397,7 +397,8 @@ PROGRAM Felixrefine
 
   !Calculate Ug matrix etc.--------------------------------------------------------
   ALLOCATE(CUgMatNoAbs(nReflections,nReflections),STAT=IErr)  !RB Ug Matrix without absorption
-  ALLOCATE(CUgMatPrime(nReflections,nReflections),STAT=IErr)  !RB U'g Matrix of just absorption  
+  ALLOCATE(TraCUgMatNoAbs(nReflections,nReflections),STAT=IErr) !Transpose 
+ALLOCATE(CUgMatPrime(nReflections,nReflections),STAT=IErr)  !RB U'g Matrix of just absorption  
   ALLOCATE(CUgMat(nReflections,nReflections),STAT=IErr)  !RB Ug+U'g Matrix, including absorption
   ALLOCATE(RgMatrix(nReflections,nReflections,ITHREE),STAT=IErr)  !Matrix of 2pi*g-vectors that corresponds to the CUgMatNoAbs matrix
   ALLOCATE(RgMatrixMagnitude(nReflections,nReflections),STAT=IErr)  !Matrix of their magnitudes

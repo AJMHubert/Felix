@@ -236,16 +236,23 @@ SUBROUTINE StructureFactorInitialisation (IErr)
     WRITE(SPrintString,FMT='(A20,F5.2,1X,A6)') "MeanInnerPotential= ",RMeanInnerPotential," Volts"
 	PRINT*,TRIM(ADJUSTL(SPrintString))
   END IF
+PRINT*,"Log1(2)"
   DO ind=1,nReflections!Take the Mean Inner Potential off the diagonal (zero diagonal, there are quicker ways to do this!)
      CUgMatNoAbs(ind,ind)=CUgMatNoAbs(ind,ind)-RMeanInnerPotential
   ENDDO
+PRINT*,"LOG2(2)"
   !NB Only the lower half of the Vg matrix was calculated, this completes the upper half
-  CUgMatNoAbs = CUgMatNoAbs + CONJG(TRANSPOSE(CUgMatNoAbs))
+TraCUgMatNoAbs = TRANSPOSE(CUgMatNoAbs)  
+CUgMatNoAbs = CUgMatNoAbs + CONJG(TraCUgMatNoAbs)
+PRINT*,"LOG3(2)"
   !Now convert to Ug=Vg*(2*m*e/h^2), where m is relativistic electron mass
   CUgMatNoAbs=CUgMatNoAbs*TWO*RElectronMass*RRelativisticCorrection*RElectronCharge/(RPlanckConstant**2)
-  !Divide U0 by 10^20 to convert Planck constant to A 
-  CUgMatNoAbs=CUgMatNoAbs/(RAngstromConversion**2)
+PRINT*,"LOG4(2)"
   
+!Divide U0 by 10^20 to convert Planck constant to A 
+  CUgMatNoAbs=CUgMatNoAbs/(RAngstromConversion**2)
+  PRINT*,"LOG5(2)"
+
   !Alternative way of calculating the mean inner potential as the sum of scattering factors at g=0 multiplied by h^2/(2pi*m0*e*CellVolume)
   !RMeanInnerPotential=ZERO
   !DO ind=1,INAtomsUnitCell
@@ -261,7 +268,7 @@ SUBROUTINE StructureFactorInitialisation (IErr)
     WRITE(SPrintString,FMT='(A4,F5.1,A10)') "K = ",RBigK," Angstroms"
 	PRINT*,TRIM(ADJUSTL(SPrintString))
   END IF
-
+ PRINT*,"LOG1"
   !--------------------------------------------------------------------
   !Count equivalent Ugs, only the first time round
   IF (IInitialSimulationFLAG.EQ.1) THEN
@@ -310,6 +317,8 @@ SUBROUTINE StructureFactorInitialisation (IErr)
     !Put them in descending order of magnitude  
     CALL ReSortUgs(IEquivalentUgKey,CUniqueUg,Iuid)  
   END IF
+
+PRINT*,"LOG2"
   
 END SUBROUTINE StructureFactorInitialisation
 

@@ -311,7 +311,7 @@ END MODULE RPara
 MODULE CPara
   USE MyNumbers
 
-  COMPLEX(CKIND), DIMENSION(:,:), ALLOCATABLE :: CUgMatNoAbs,CUgMatPrime,CUgMat,CUgSgMatrix,CEigenValuesChunk
+  COMPLEX(CKIND), DIMENSION(:,:), ALLOCATABLE :: CUgMatNoAbs,TraCUgMatNoAbs,CUgMatPrime,CUgMat,CUgSgMatrix,CEigenValuesChunk
   COMPLEX(CKIND), DIMENSION(:,:,:), ALLOCATABLE :: CEigenVectorsChunk
   COMPLEX(CKIND),DIMENSION(:),ALLOCATABLE :: CAlphaWeightingCoefficients, CPsi0,CUniqueUg
   COMPLEX(CKIND),DIMENSION(:,:), ALLOCATABLE :: CEigenValueDependentTerms,CInvertedEigenVectors, &
