@@ -736,6 +736,24 @@ PROGRAM Felixrefine
           INoOfLacbedPatterns*IThicknessCount    
   END DO
 
+  IF(IPatternConvergeFLAG.EQ.1) THEN !Bloch wave convergence mode
+     SELECT CASE(IMinStrongBeams)
+
+     CASE(: 49)!Less Than 49
+        CALL message( LS, "Cannot do Bloch Wave Convergence with Reference Strong Beams < 50")
+        CALL abort 
+
+     CASE(: 50,100 :) !Greater Than 50, Less Than 100
+        CALL message( LS, "Warning: Reference Strong Beam below 100, Continuing with modified sample simulations")
+
+     CASE DEFAULT !Greater than 100 using 50,40,30,20,10 as sample simulations
+        CALL message( LS, "Reference Strong Beam value:",IMinStrongBeams)
+        IMinWeakBeams=IMinStrongBeams !Set the Weak beams to equal the strong beams
+
+     END SELECT
+  END IF
+
+
   !--------------------------------------------------------------------
   ! baseline simulation
   !--------------------------------------------------------------------
