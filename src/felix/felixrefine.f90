@@ -797,7 +797,7 @@ PROGRAM Felixrefine
      IF(IPatternConvergeFLAG.EQ.1) THEN !Bloch wave convergence mode
         IF(my_rank.EQ.0) THEN
            CALL message(LS,"Entering Convergence Mode, PatternConvergenceFLAG = ", IPatternConvergeFLAG)
-           CALL SimulateAndConverge(IStrongBeamSampleVec) 
+           CALL SimulateAndConverge(IStrongBeamSampleVec,IErr) 
         END IF
 
      END IF
