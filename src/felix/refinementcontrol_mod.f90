@@ -229,18 +229,8 @@ CONTAINS
   !!
   !! Major-Authors: Alex Hubert(2018), Richard Beanland (2016)
   !!  
-SUBROUTINE SimulateAndConverge(RIndependentVariable,Iter,IThicknessIndex,IErr)
-
-    ! JR (very rough) overview:
-    ! RIndependentVariable holds refinement variables, UpdateVariables updates matching variable
-    ! various global variables which were read from files or setup are now constant
-    ! UniqueAtomPositions used to recalculate all atoms in lattice from basis atoms
-    ! CUgMat = CUgMatNoAbs + CUgMatPrime ( from absoption )
-    ! Simulate ( CUgMat + others ) ---> RImageSimi
-    ! On core 0, FigureOfMeritAndThickness includes image processing 
-    ! RImageExpi(x,y,LACBED_ID) are compared to RImageSimi(x,y,LACBED_ID, thickness_ID)
-    ! This calculates ---> RFigureofMerit
-    ! MPI_BCAST(RFigureofMerit) then sends RFigureofMerit to all cores    
+SUBROUTINE SimulateAndConverge(IStrongBeamSampleVec,IErr)
+    
 
     USE MyNumbers
     USE message_mod
@@ -250,30 +240,13 @@ SUBROUTINE SimulateAndConverge(RIndependentVariable,Iter,IThicknessIndex,IErr)
     USE crystallography_mod
     USE write_output_mod
 
-    ! global inputs
-    USE IPARA, ONLY : INoOfVariables, nReflections, IAbsorbFLAG, INoofUgs, &
-         IPixelCount, ISimFLAG, ISymmetryRelations, IUgOffset, IRefineMode, &
-         IEquivalentUgKey
-    USE RPARA, ONLY : RAngstromConversion,RElectronCharge,RElectronMass,&
-         RConvergenceAngle, RMinimumGMag, RTolerance, RRelativisticCorrection, &
-         RVolume, RgMatrix, RgMatrixMagnitude, RCurrentGMagnitude,Rhkl
-    USE RConst, ONLY : RPlanckConstant
-
-    ! global outputs
-    USE CPARA, ONLY : CUgMat,CUgMatNoAbs, CUniqueUg
-    USE RPARA, ONLY : RAbsorptionPercentage, RDeltaK, RFigureofMerit, RSimulatedPatterns
 
     IMPLICIT NONE
 
-    REAL(RKIND),INTENT(INOUT) :: RIndependentVariable(INoOfVariables)
-    INTEGER(IKIND),INTENT(INOUT) :: Iter
-    INTEGER(IKIND),INTENT(OUT) :: IThicknessIndex 
-    ! NB IThicknessIndex is calculated and used on rank 0 only
     INTEGER(IKIND),INTENT(OUT) :: IErr
-    INTEGER(IKIND) :: ind,jnd, ILoc(2), IUniqueUgs
+    INTEGER(IKIND) :: ind,jnd
     INTEGER(IKIND), SAVE :: IStartTime
-    REAL(RKIND) :: RCurrentG(3), RScatteringFactor
-    COMPLEX(CKIND) :: CUgMatDummy(nReflections,nReflections),CVgij
+    INTEGER(IKIND), DIMENSION(5), INTENT(IN) :: IStrongBeamSampleVec 
     CHARACTER*100 :: SFormat,SPrintString
 
     CALL SYSTEM_CLOCK( IStartTime )
@@ -282,7 +255,10 @@ SUBROUTINE SimulateAndConverge(RIndependentVariable,Iter,IThicknessIndex,IErr)
        CALL PrintVariables(IErr)
        IF(l_alert(IErr,"SimulateAndFit","PrintVariables")) RETURN
     END IF
-
+    
+    DO ind = 1, 5
+       IMinStrongBeams = IStrongBeamSampleVec(i)
+       IMinWeakBeams = IMinStrongBeams
     ! simulate
     RSimulatedPatterns = ZERO ! Reset simulation
     CALL Simulate(IErr) ! simulate 
@@ -290,7 +266,7 @@ SUBROUTINE SimulateAndConverge(RIndependentVariable,Iter,IThicknessIndex,IErr)
 
     IF(my_rank.EQ.0) THEN
        ! Write current variable list and fit to IterationLog.txt
-       CALL WriteOutVariables(Iter,IErr)
+       CALL WriteOutVariables(ind,IErr)
        IF(l_alert(IErr,"SimulateAndFit","WriteOutVariables")) RETURN
     END IF
 
