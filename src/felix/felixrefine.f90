@@ -770,9 +770,9 @@ PROGRAM Felixrefine
      !Check to see if pool large enough
      IF(IMinReflectionPool.LT.(IMinStrongBeams*3)) THEN 
         CALL message( LS, "Reflection Pool too low, making pool 3x strong beams...")
-        CALL message( LS, "Reflection Pool User Value:",IMinReflectionPool)
+        CALL message( LS, "Reflection Pool User Value = ",IMinReflectionPool)
         IMinReflectionPool=IMinStrongBeams*3
-        CALL message( LS, "Modified Reflection Pool Value (Reference Sim):",IMinReflectionPool)
+        CALL message( LS, "Modified Reflection Pool Value =",IMinReflectionPool)
      END IF
   END IF
 
@@ -797,7 +797,7 @@ PROGRAM Felixrefine
      IF(IPatternConvergeFLAG.EQ.1) THEN !Bloch wave convergence mode
         IF(my_rank.EQ.0) THEN
            CALL message(LS,"Entering Convergence Mode, PatternConvergenceFLAG = ", IPatternConvergeFLAG)
-           !Here will be a function call to SimulateAndConverge written in refinementcontrol_mod
+           CALL SimulateAndConverge(IStrongBeamSampleVec) 
         END IF
 
      END IF

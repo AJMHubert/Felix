@@ -259,7 +259,7 @@ MODULE read_files_mod
        IPatternConvergeFLAG=1 ! BlochWaveConvergenceMode
     ELSE
        ISimFLAG=0
-       IPatternConvergeFLAG=1
+       IPatternConvergeFLAG=0
       SRefineMode = SRefineMode((SCAN(SRefineMode,"=")+1):)
       IRefineMode = 0
       DO ind = 1,IRefinementVariableTypes

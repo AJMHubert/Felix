@@ -79,7 +79,7 @@ MODULE write_output_mod
   !! Procedure-description: Writes output for interations including simulated .bin files, 
   !! structureFactors.txt and structure.cif 
   !!
-  !! Major-Authors: 'kidwhizz' (2015), Richard Beanland (2016)
+  !! Major-Authors: Keith Evans (2015), Richard Beanland (2016)
   !!
   SUBROUTINE WriteIterationOutput(Iter,IThicknessIndex,IExitFlag,IErr)
 
@@ -261,7 +261,7 @@ MODULE write_output_mod
   !>
   !! Procedure-description: Adds the current fit and simulation parameters to IterationLog.txt
   !!
-  !! Major-Authors: 'kidwhizz' (2015), Richard Beanland (2016)
+  !! Major-Authors: Keith Evans (2015), Richard Beanland (2016)
   !!
   SUBROUTINE WriteOutVariables(Iter,IErr)
 
