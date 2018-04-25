@@ -736,7 +736,7 @@ PROGRAM Felixrefine
      ICount(ind) = (((IPixelTotal*(ind)/p) - (IPixelTotal*(ind-1)/p)))* &
           INoOfLacbedPatterns*IThicknessCount    
   END DO
-  
+
   !--------------------------------------------------------------------
   !Bloch wave convergence mode
   !--------------------------------------------------------------------
@@ -747,7 +747,7 @@ PROGRAM Felixrefine
         !Could specific give error code here
         CALL message( LS, "Cannot do Bloch Wave Convergence with Reference Strong Beams < 50")
         CALL abort
-        
+
      CASE(: 50,100 :)
         !Greater Than 50, Less Than 100      
         !Calculate the sample integer size - make it roughly half the Reference Strong Beam Value
@@ -757,15 +757,15 @@ PROGRAM Felixrefine
         IStrongBeamSampleVec=[IStrongBeamInit,IStrongBeamInit*2,IStrongBeamInit*3,IStrongBeamInit*4 &
              ,IStrongBeamInit*5]
         IMinWeakBeams=IMinStrongBeam
-         
+
      CASE DEFAULT
         !Greater than 100, using 50,40,30,20,10 as sample simulations
         !Set the Weak beams to equal the number of strong beams -
-        !With further research we can change this - Birkeland Paper etc 
+        !With further research this can be changed - Birkeland Paper etc 
         CALL message( LS, "Reference Sim Strong Beam value:",IMinStrongBeams)    
         IStrongBeamSampleVec=[50,40,30,20,10]
         IMinWeakBeams=IMinStrongBeams
-        
+
      END SELECT
      !Check to see if pool large enough
      IF(IMinReflectionPool.LT.(IMinStrongBeams*3)) THEN 
@@ -787,20 +787,11 @@ PROGRAM Felixrefine
   CALL Simulate(IErr)
   IF(l_alert(IErr,"felixrefine","Simulate")) CALL abort
   CALL PrintEndTime(LS,IStartTime2, "Simulation" )
-
-  !--------------------------------------------------------------------
-
-  ! baseline simulation
   IExitFLAG = 0 ! Do not exit
   IPreviousPrintedIteration = 0  ! ensures baseline simulation is printed
-  IF (ISimFLAG.EQ.1) THEN ! Simulation only mode   
-     IF(IPatternConvergeFLAG.EQ.1) THEN !Bloch wave convergence mode
-        IF(my_rank.EQ.0) THEN
-           CALL message(LS,"Entering Convergence Mode, PatternConvergenceFLAG = ", IPatternConvergeFLAG)
-           CALL SimulateAndConverge(IStrongBeamSampleVec,IErr) 
-        END IF
 
-     END IF
+  IF (ISimFLAG.EQ.1) THEN ! Simulation only mode   
+
      !--------------------------------------------------------------------
      ! simulation only mode
      !--------------------------------------------------------------------
@@ -813,6 +804,18 @@ PROGRAM Felixrefine
            IF(l_alert(IErr,"felixrefine","WriteIterationOutput")) CALL abort 
         END DO
      END IF
+
+     !--------------------------------------------------------------------
+     ! Bloch wave Convergence Mode
+     !--------------------------------------------------------------------
+
+     IF(IPatternConvergeFLAG.EQ.1) THEN !Bloch wave convergence mode
+        IF(my_rank.EQ.0) THEN
+           CALL message(LS,"Entering Convergence Mode, PatternConvergenceFLAG = ", IPatternConvergeFLAG)
+           CALL SimulateAndConverge(IStrongBeamSampleVec,IErr) 
+        END IF
+     END IF
+
 
   ELSE! Refinement Mode
      IF(my_rank.EQ.0) THEN!outputs to disc come from core 0 only

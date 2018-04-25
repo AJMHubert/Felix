@@ -229,8 +229,8 @@ CONTAINS
   !!
   !! Major-Authors: Alex Hubert(2018), Richard Beanland (2016)
   !!  
-SUBROUTINE SimulateAndConverge(IStrongBeamSampleVec,IErr)
-    
+  SUBROUTINE SimulateAndConverge(IStrongBeamSampleVec,IErr)
+
 
     USE MyNumbers
     USE message_mod
@@ -250,26 +250,36 @@ SUBROUTINE SimulateAndConverge(IStrongBeamSampleVec,IErr)
     CHARACTER*100 :: SFormat,SPrintString
 
     CALL SYSTEM_CLOCK( IStartTime )
-    
+
     IF (my_rank.EQ.0) THEN ! send current values to screen
        CALL PrintVariables(IErr)
        IF(l_alert(IErr,"SimulateAndFit","PrintVariables")) RETURN
     END IF
-    
+
+    !Loop over the number of sample Strong beam values
     DO ind = 1, 5
        IMinStrongBeams = IStrongBeamSampleVec(i)
        IMinWeakBeams = IMinStrongBeams
-    ! simulate
-    RSimulatedPatterns = ZERO ! Reset simulation
-    CALL Simulate(IErr) ! simulate 
-    IF(l_alert(IErr,"SimulateAndFit","Simulate")) RETURN
+       ! simulate
+       RSimulatedPatterns = ZERO ! Reset simulation
+       CALL Simulate(IErr) ! simulate 
+       IF(l_alert(IErr,"SimulateAndFit","Simulate")) RETURN
 
-    IF(my_rank.EQ.0) THEN
-       ! Write current variable list and fit to IterationLog.txt
-       CALL WriteOutVariables(ind,IErr)
-       IF(l_alert(IErr,"SimulateAndFit","WriteOutVariables")) RETURN
-    END IF
+       ! simulate multiple thicknesses
+       IF(my_rank.EQ.0) THEN
+          CALL message(LS,"Writing simulations with the number of thicknesses =", IThicknessCount)
+          DO IThicknessIndex = 1,IThicknessCount
+             CALL WriteIterationOutput(ind,IThicknessIndex,IExitFLAG,IErr)
+             IF(l_alert(IErr,"felixrefine","WriteIterationOutput")) CALL abort 
+          END DO
+       END IF
 
+       IF(my_rank.EQ.0) THEN
+          ! Write current variable list and fit to IterationLog.txt
+          CALL WriteOutVariables(ind,IErr)
+          IF(l_alert(IErr,"SimulateAndFit","WriteOutVariables")) RETURN
+       END IF
+    END DO
     !===================================== ! Send the fit index to all cores
     CALL MPI_BCAST(RFigureofMerit,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IErr)
     !=====================================
