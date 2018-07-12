@@ -50,7 +50,7 @@ LIBS= -lblas -llapack -lfftw3
 # which fortran compiler is used
 F90=mpif90
 # its flags
-F90FLAGS= -O2 -m64 -DF90 -fexternal-blas \
+F90FLAGS= -O -m64 -DF90 -fexternal-blas \
 	  -ffree-line-length-none -fbounds-check \
 	  -fno-range-check -fimplicit-none
 #F90FLAGS= -pg -fprofile-arcs -O2 -m64 -DF90 -fexternal-blas \
@@ -81,7 +81,7 @@ FCOMPILE=$(FF)  $(FFFLAGS)  -I$(INCDIR) $(ARITHMETIC) $(LONGINTEGER) -c -o $@ $<
 # which linker do we use
 LD=$(F90)
 # its flags
-LDFLAGS=-O -m64  -mcmodel=medium -fPIC -L$(STARTDIR)/../lib 
+#LDFLAGS=-O -m64  -mcmodel=medium -fPIC -L$(STARTDIR)/../lib 
 
 
 

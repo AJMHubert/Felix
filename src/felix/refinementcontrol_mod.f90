@@ -438,10 +438,16 @@ MODULE refinementcontrol_mod
       IF(RTotalCorrelation.LT.RBestTotalCorrelation) THEN
         RBestTotalCorrelation = RTotalCorrelation
         IBestThicknessIndex = jnd
-      END IF
+     END IF
 
-      CALL message(LM,dbg6,"Specimen thickness number ",IBestThicknessIndex)
-      CALL message(LM,dbg6,"Figure of merit ",RTotalCorrelation)
+     IF(my_rank.EQ.0) THEN
+        PRINT*,"Specimen thickness number   ",jnd
+        PRINT*,"Figure of Merit   ",RTotalCorrelation
+     END IF
+     
+
+      !CALL message(LM,dbg6,"Specimen thickness number ",IBestThicknessIndex)
+      !CALL message(LM,dbg6,"Figure of merit ",RTotalCorrelation)
 
     END DO
     CLOSE(IChOut)

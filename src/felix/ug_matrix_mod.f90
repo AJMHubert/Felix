@@ -306,7 +306,15 @@ MODULE ug_matrix_mod
         END IF
         ! The structure factor equation, complex Vg(ind,jnd)=sum(f*exp(-ig.r)) in Volts
         CVgij=CVgij+RScatteringFactor*RScattFacToVolts*EXP(-CIMAGONE*DOT_PRODUCT(RgMatrix(ind,jnd,:),&
-              RAtomCoordinate(knd,:)) )
+             RAtomCoordinate(knd,:)) )
+        IF(my_rank.EQ.0) THEN
+        PRINT*,'RScattFacToVolts =',RScattFacToVolts
+        PRINT*,'RScatteringFactor =',RScatteringFactor
+        PRINT*,'CVgij =',CVgij
+        PRINT*,'CIMAGONE =',CIMAGONE
+        PRINT*,'RgMatrix(ind,jnd,:)  =',RgMatrix(ind,jnd,:)
+        PRINT*,'RAtomCoordinate(knd,:)',RAtomCoordinate(knd,:)
+     END IF
       ELSE ! pseudoatom
         INumPseudAtoms=INumPseudAtoms+1
         CALL PseudoAtom(CFpseudo,ind,jnd,INumPseudAtoms,IErr)
@@ -476,10 +484,27 @@ MODULE ug_matrix_mod
         CALL GetVgContributionij(RScatteringFactor,ind,jnd,CVgij,IErr)
 		CUgMatNoAbs(ind,jnd)=CVgij
       ENDDO
-    ENDDO
+   ENDDO
+   
+   CALL message( LM,dbg3, "Ug matrix, without absorption - second bugcheck (nm^-2)" )!LM, dbg3
+    DO ind = 1,16
+	  WRITE(SPrintString,FMT='(3(I2,1X),A2,1X,8(F7.4,1X))') NINT(Rhkl(ind,:)),": ",100*CUgMatNoAbs(ind,1:4)
+   CALL message( LM,dbg3, SPrintString)
+   END DO
+   
     !Convert to Ug
     CUgMatNoAbs=CUgMatNoAbs*TWO*RElectronMass*RRelativisticCorrection*RElectronCharge/((RPlanckConstant**2)*(RAngstromConversion**2))
+    CALL message(LL,'RElectronMass =',RElectronMass)
+    CALL message(LL,'RRelativisticCorrection =',RRelativisticCorrection)
+    CALL message(LL,'RElectronCharge =',RElectronCharge)
+    CALL message(LL,'RPlanckConstant =',RPlanckConstant)
+    CALL message(LL,'RAngstromConversion =',RAngstromConversion)
     ! NB Only the lower half of the Vg matrix was calculated, this completes the upper half
+    CALL message( LM,dbg3, "Ug matrix, without absorption - obsolete bugcheck (nm^-2)" )!LM, dbg3
+    DO ind = 1,16
+	  WRITE(SPrintString,FMT='(3(I2,1X),A2,1X,8(F7.4,1X))') NINT(Rhkl(ind,:)),": ",100*CUgMatNoAbs(ind,1:4)
+   CALL message( LM,dbg3, SPrintString)
+   END DO
     CUgMatPrime = TRANSPOSE(CUgMatNoAbs)! Prime is usually the absorptive potential, here just used as a box to avoid the bug when conj(transpose) is used
     CUgMatNoAbs = CUgMatNoAbs + CONJG(CUgMatPrime)
     CUgMatPrime = CZERO
