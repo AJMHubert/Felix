@@ -163,8 +163,14 @@ PROGRAM Felixrefine
   RRelativisticCorrection = ONE/SQRT( ONE - (RElectronVelocity/RSpeedOfLight)**2 )
   RRelativisticMass = RRelativisticCorrection*RElectronMass
   !conversion from Vg to Ug, h^2/(2pi*m0*e), see e.g. Kirkland eqn. C.5
-  RScattFacToVolts=(RPlanckConstant**2)*(RAngstromConversion**2)/&
-  (TWOPI*RElectronMass*RElectronCharge*RVolume)
+  RScattFacToVolts=(RPlanckConstant**2 )*(RAngstromConversion**2)/&
+       (TWOPI*RElectronMass*RElectronCharge*RVolume)
+  IF(my_rank.EQ.0) THEN
+        PRINT*,'RScattFacToVolts =',RScattFacToVolts
+        PRINT*,'RPlanckConstant =',RPlanckConstant
+        PRINT*,'RPlanckConstant**2 =',RPlanckConstant**2
+        PRINT*,'RPlanckConstant**2.D0 =',RPlanckConstant**2.D0
+     END IF
   ! Creates reciprocal lattice vectors in Microscope reference frame
   CALL ReciprocalLattice(IErr)
   IF(l_alert(IErr,"felixrefine","ReciprocalLattice")) CALL abort
