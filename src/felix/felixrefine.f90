@@ -168,8 +168,11 @@ PROGRAM Felixrefine
   IF(my_rank.EQ.0) THEN
         PRINT*,'RScattFacToVolts =',RScattFacToVolts
         PRINT*,'RPlanckConstant =',RPlanckConstant
-        PRINT*,'RPlanckConstant**2 =',RPlanckConstant**2
-        PRINT*,'RPlanckConstant**2.D0 =',RPlanckConstant**2.D0
+        PRINT*,'RAngstromConversion =',RAngstromConversion
+        PRINT*,'TWOPI =',TWOPI
+        PRINT*,'RElectronMass =',RElectronMass
+        PRINT*,'RElectronCharge =',RElectronCharge
+        PRINT*,'RVolume =',RVolume
      END IF
   ! Creates reciprocal lattice vectors in Microscope reference frame
   CALL ReciprocalLattice(IErr)
