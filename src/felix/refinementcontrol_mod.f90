@@ -394,11 +394,12 @@ CONTAINS
     USE RPARA, ONLY : RFigureofMerit
 
     ! global inputs
-    USE IPARA, ONLY : INoOfLacbedPatterns, ICorrelationFLAG, IPixelCount, IThicknessCount, &
-         IImageProcessingFLAG
-    USE RPARA, ONLY : RInitialThickness, RDeltaThickness, RImageMask, &
-         RImageSimi, &   ! a main input - simulated images
-         RImageExpi      ! a main input - experimental images to compare
+    USE IPARA, ONLY : INoOfLacbedPatterns,ICorrelationFLAG,IPixelCount,IThicknessCount, &
+          IImageProcessingFLAG,IOutPutReflections
+    USE RPARA, ONLY : RInitialThickness,RDeltaThickness,RImageMask,Rhkl, &
+          RImageSimi, &   ! a main input - simulated images
+          RImageExpi      ! a main input - experimental images to compare
+    USE IChannels, ONLY : IChOut
 
     IMPLICIT NONE
 
@@ -422,38 +423,42 @@ CONTAINS
     ! The thickness with the lowest figure of merit for each image
     IBestImageThicknessIndex = 1 
 
+    ! write out PatternFits.txt
+	OPEN(UNIT=IChOut,FILE='PatternFits.txt',FORM='formatted',STATUS='unknown',POSITION='append')
+	WRITE(IChOut,FMT='(A10,I4)') "Iteration ",Iter
     !\/----------------------------------------------------------------------
     DO jnd = 1,IThicknessCount
-       RTotalCorrelation = ZERO ! The sum of all individual correlations, initialise at 0
-       DO ind = 1,INoOfLacbedPatterns
-          RSimulatedImage = RImageSimi(:,:,ind,jnd)
-          RExperimentalImage = RImageExpi(:,:,ind)
-          IF (ICorrelationFLAG.EQ.3) THEN ! masked correltion, update mask
-             RMaskImage=RImageMask(:,:,ind)
-          END IF
-
-          ! image processing
-          SELECT CASE (IImageProcessingFLAG)
-             !CASE(0) !no processing
-          CASE(1)! square root before perfoming correlation
-             RSimulatedImage=SQRT(RSimulatedImage)
-             RExperimentalImage=SQRT(RImageExpi(:,:,ind))
-          CASE(2)! log before performing correlation
-             WHERE (RSimulatedImage.GT.TINY)
-                RSimulatedImage=LOG(RSimulatedImage)
-             ELSEWHERE
-                RSimulatedImage = TINY
-             END WHERE
-             WHERE (RExperimentalImage.GT.TINY)
-                RExperimentalImage = LOG(RImageExpi(:,:,ind))
-             ELSEWHERE
-                RExperimentalImage =  TINY
-             END WHERE
-
-          END SELECT
-
-          ! Correlation type
-          SELECT CASE (ICorrelationFLAG)
+	  WRITE(IChOut,FMT='(A10,I4)') "Thickness ",NINT(RInitialThickness+(jnd-1)*RDeltaThickness)
+      RTotalCorrelation = ZERO ! The sum of all individual correlations, initialise at 0
+      DO ind = 1,INoOfLacbedPatterns
+        RSimulatedImage = RImageSimi(:,:,ind,jnd)
+        RExperimentalImage = RImageExpi(:,:,ind)
+        IF (ICorrelationFLAG.EQ.3) THEN ! masked correlation, update mask
+          RMaskImage=RImageMask(:,:,ind)
+        END IF
+        
+        ! image processing
+        SELECT CASE (IImageProcessingFLAG)
+        !CASE(0) !no processing
+        CASE(1)! square root before perfoming correlation
+          RSimulatedImage=SQRT(RSimulatedImage)
+          RExperimentalImage=SQRT(RImageExpi(:,:,ind))
+        CASE(2)! log before performing correlation
+          WHERE (RSimulatedImage.GT.TINY)
+            RSimulatedImage=LOG(RSimulatedImage)
+          ELSEWHERE
+            RSimulatedImage = TINY
+          END WHERE
+          WHERE (RExperimentalImage.GT.TINY)
+            RExperimentalImage = LOG(RImageExpi(:,:,ind))
+          ELSEWHERE
+            RExperimentalImage =  TINY
+          END WHERE
+        
+        END SELECT
+        
+        ! Correlation type
+        SELECT CASE (ICorrelationFLAG)
           CASE(0) ! Phase Correlation
              RImageCorrelation=ONE-& ! NB Perfect Correlation = 0 not 1
                   PhaseCorrelate(RSimulatedImage,RExperimentalImage,&
@@ -465,45 +470,47 @@ CONTAINS
              RImageCorrelation = ONE-& ! NB Perfect Correlation = 0 not 1
                   Normalised2DCrossCorrelation(RSimulatedImage,RExperimentalImage,IErr)
           CASE(3) ! Masked Cross Correlation
-             IF (Iter.LE.0) THEN
-                ! we are in baseline sim or simplex initialisation: do a normalised2D CC
-                RImageCorrelation = ONE-&
-                     Normalised2DCrossCorrelation(RSimulatedImage,RExperimentalImage,IErr)   
-             ELSE ! we are refining: do a masked CC
-                RImageCorrelation = ONE-& ! NB Perfect Correlation = 0 not 1
-                     MaskedCorrelation(RSimulatedImage,RExperimentalImage,RMaskImage,IErr)
-             END IF
-          END SELECT
+            IF (Iter.LE.0) THEN
+            ! we are in baseline sim or simplex initialisation: do a normalised2D CC
+              RImageCorrelation = ONE-&
+                    Normalised2DCrossCorrelation(RSimulatedImage,RExperimentalImage,IErr)   
+            ELSE ! we are refining: do a masked CC
+              RImageCorrelation = ONE-& ! NB Perfect Correlation = 0 not 1
+                    MaskedCorrelation(RSimulatedImage,RExperimentalImage,RMaskImage,IErr)
+            END IF
+        END SELECT
 
-          CALL message(LXL,dbg6,"For Pattern ",ind,", thickness ",jnd)
-          CALL message(LXL,dbg6,"  the FoM = ",RImageCorrelation)
+        CALL message(LXL,dbg6,"For Pattern ",ind,", thickness ",jnd)
+        CALL message(LXL,dbg6,"  the FoM = ",RImageCorrelation)
+		WRITE(IChOut,FMT='(3I5.1,F13.9)') NINT(Rhkl(IOutPutReflections(ind),:)),RImageCorrelation
+		
+        ! Determine which thickness matches best for each LACBED pattern
+        ! which is later used to find the range of viable thicknesses 
+        IF(RImageCorrelation.LT.RBestCorrelation(ind)) THEN
+          RBestCorrelation(ind) = RImageCorrelation
+          IBestImageThicknessIndex(ind) = jnd
+        END IF
+        RTotalCorrelation = RTotalCorrelation + RImageCorrelation
+      END DO
+      RTotalCorrelation=RTotalCorrelation/REAL(INoOfLacbedPatterns,RKIND)
+        
+      ! Determines which thickness matches best
+      IF(RTotalCorrelation.LT.RBestTotalCorrelation) THEN
+        RBestTotalCorrelation = RTotalCorrelation
+        IBestThicknessIndex = jnd
+      END IF
 
-          ! Determines which thickness matches best for each LACBED pattern
-          ! which is later used to find the range of viable thicknesses 
-          IF(RImageCorrelation.LT.RBestCorrelation(ind)) THEN
-             RBestCorrelation(ind) = RImageCorrelation
-             IBestImageThicknessIndex(ind) = jnd
-          END IF
-          RTotalCorrelation = RTotalCorrelation + RImageCorrelation
-       END DO
-       RTotalCorrelation=RTotalCorrelation/REAL(INoOfLacbedPatterns,RKIND)
-
-       ! Determines which thickness matches best
-       IF(RTotalCorrelation.LT.RBestTotalCorrelation) THEN
-          RBestTotalCorrelation = RTotalCorrelation
-          IBestThicknessIndex = jnd
-       END IF
-
-       CALL message(LM,dbg6,"Specimen thickness number ",IBestThicknessIndex)
-       CALL message(LM,dbg6,"Figure of merit ",RTotalCorrelation)
+      CALL message(LM,dbg6,"Specimen thickness number ",IBestThicknessIndex)
+      CALL message(LM,dbg6,"Figure of merit ",RTotalCorrelation)
 
     END DO
-    !/\----------------------------------------------------------------------
+    CLOSE(IChOut)
 
+    !/\----------------------------------------------------------------------
     ! The figure of merit, global variable
     RFigureofMerit = RBestTotalCorrelation
 
-    !?? Alternative method below, RWeightingCoefficients not used and has been removed 
+    !?? Alternative method below, RWeightingCoefficients not used and have been removed 
     !?? assume that the best thickness is given by the mean of individual thicknesses  
     !IBestThicknessIndex = SUM(IBestImageThicknessIndex)/INoOfLacbedPatterns
     !RBestThickness = RInitialThickness + (IBestThicknessIndex-1)*RDeltaThickness
