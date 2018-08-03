@@ -253,7 +253,12 @@ MODULE read_files_mod
     ! IRefineModeFLAG
     ILine= ILine+1; READ(IChInp,FMT='(A)',ERR=20,END=30) SRefineMode
     IF(SCAN(TRIM(ADJUSTL(SRefineMode)),TRIM(ADJUSTL(SAlphabet(19)))).NE.0) THEN
-      ISimFLAG=1 ! Simulation only
+       ISimFLAG=1 ! Simulation only
+       IF (SCAN(TRIM(ADJUSTL(SRefineMode)),TRIM(ADJUSTL(SAlphabet(3)))).NE.0) THEN
+          IPatternConvergeFLAG=1 !We are looking for Bloch Wave Convergence
+       ELSE
+          IPatternConvergeFLAG=0
+       END IF
     ELSE
        ISimFLAG=0
        IPatternConvergeFLAG=0

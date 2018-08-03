@@ -109,7 +109,7 @@ MODULE write_output_mod
       WRITE(path,"(A1,I4.4,A1,I3.3,A3,I3.3,A1,I3.3)") &
             "I",Iter,"_",IThickness,"nm_",2*IPixelcount,"x",2*IPixelcount
       path = SChemicalFormula(1:ILN) // "_" // path ! This adds chemical to folder name
-   ELSEIF (IPatternConvergeFLAG.EQ.1) THEN !Bloch Wave Convergence Output
+   ELSE IF (IPatternConvergeFLAG.EQ.1) THEN !Bloch Wave Convergence Output
       WRITE(path,"(A14,I3.3,A1,I3.3,A3,I3.3,A1,I3.3)") &
             "BlochConverge_",IMinStrongBeams,"Beams_",IThickness,"nm_",2*IPixelcount,"x",2*IPixelcount
    ELSE! Sim Output
