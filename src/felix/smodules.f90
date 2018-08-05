@@ -166,7 +166,7 @@ MODULE IPara
   !OtherFLAGS
   INTEGER(IKIND) :: IDiffractionFLAG=0
   INTEGER(IKIND) :: IInitialSimulationFLAG
-  INTEGER(IKIND) :: ISimFLAG
+  INTEGER(IKIND) :: ISimFLAG, IPatternConvergeFLAG
   !Disk Radius
   INTEGER(IKIND) :: IPixelCount 
   !Crystal Settings

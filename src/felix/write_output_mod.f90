@@ -48,7 +48,8 @@ MODULE write_output_mod
     USE message_mod
     USE MyMPI
     ! global inputs/outputs
-    USE IPARA, ONLY : IPrint, IPreviousPrintedIteration
+    USE IPARA, ONLY : IPrint, IPreviousPrintedIteration, IMinStrongBeams, &
+         IPatternConvergeFLAG
 
     IMPLICIT NONE
     INTEGER(IKIND),INTENT(IN) :: Iter,IThicknessIndex,IExitFLAG

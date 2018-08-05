@@ -54,7 +54,7 @@ MODULE read_files_mod
     ! global outputs, read from .inp
     USE IPARA, ONLY : IWriteFLAG, IImageFLAG, IScatterFactorMethodFLAG, IMaskFLAG, IHolzFLAG, &
           IAbsorbFLAG, IAnisoDebyeWallerFactorFlag, IByteSize, IMinReflectionPool, &
-          IMinStrongBeams, IMinWeakBeams, INoOfLacbedPatterns, ISimFLAG, IRefineMode, &
+          IMinStrongBeams, IMinWeakBeams, INoOfLacbedPatterns, ISimFLAG, IPatternConvergeFLAG, IRefineMode, &
           IWeightingFLAG, IRefineMethodFLAG, ICorrelationFLAG, IImageProcessingFLAG, &
           INoofUgs, IPrint, IPixelCount, IBlochMethodFLAG
     USE RPARA, ONLY : RDebyeWallerConstant, RAbsorptionPercentage, RConvergenceAngle, &
