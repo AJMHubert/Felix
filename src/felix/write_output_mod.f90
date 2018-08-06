@@ -88,7 +88,7 @@ MODULE write_output_mod
     USE message_mod
     
     ! global inputs
-    USE IPARA, ONLY : ILN,IPixelCount,ISimFLAG,IOutPutReflections,INoOfLacbedPatterns,nReflections,IByteSize
+    USE IPARA, ONLY : ILN,IPixelCount,ISimFLAG,IOutPutReflections,INoOfLacbedPatterns,nReflections,IByteSize, IPatternConvergeFLAG,IMinStrongBeams
     USE CPARA, ONLY : CUgMat
     USE RPARA, ONLY : Rhkl, RImageSimi, RInitialThickness, RDeltaThickness
     USE SPARA, ONLY : SChemicalFormula

@@ -41,7 +41,7 @@
 MODULE refinementcontrol_mod
   IMPLICIT NONE
   PRIVATE
-  PUBLIC :: SimulateAndFit, Simulate, FigureOfMeritAndThickness
+  PUBLIC :: SimulateAndFit, Simulate, SimulateAndConverge, FigureOfMeritAndThickness
 
 CONTAINS
 
@@ -240,11 +240,14 @@ CONTAINS
     USE crystallography_mod
     USE write_output_mod
 
+    USE IPara, ONLY: IMinStrongBeams,IMinWeakBeams,IThicknessCount
+    USE RPara, ONLY: RSimulatedPatterns
+
 
     IMPLICIT NONE
 
     INTEGER(IKIND),INTENT(OUT) :: IErr
-    INTEGER(IKIND) :: ind,jnd
+    INTEGER(IKIND) :: ind,jnd, IStayInSimulationFLAG,IThicknessValue
     INTEGER(IKIND), SAVE :: IStartTime
     INTEGER(IKIND), DIMENSION(5), INTENT(IN) :: IStrongBeamSampleVec 
     CHARACTER*100 :: SFormat,SPrintString
@@ -253,23 +256,25 @@ CONTAINS
 
     IF (my_rank.EQ.0) THEN ! send current values to screen
        CALL PrintVariables(IErr)
-       IF(l_alert(IErr,"SimulateAndFit","PrintVariables")) RETURN
+       IF(l_alert(IErr,"SimulateAndConverge","PrintVariables")) RETURN
     END IF
 
     !Loop over the number of sample Strong beam values
     DO ind = 1, 5
-       IMinStrongBeams = IStrongBeamSampleVec(i)
+       IMinStrongBeams = IStrongBeamSampleVec(ind)
        IMinWeakBeams = IMinStrongBeams
        ! simulate
        RSimulatedPatterns = ZERO ! Reset simulation
        CALL Simulate(IErr) ! simulate 
        IF(l_alert(IErr,"SimulateAndFit","Simulate")) RETURN
 
+       IStayInSimulationFLAG=0
        ! simulate multiple thicknesses
        IF(my_rank.EQ.0) THEN
           CALL message(LS,"Writing simulations with the number of thicknesses =", IThicknessCount)
-          DO IThicknessIndex = 1,IThicknessCount
-             CALL WriteIterationOutput(ind,IThicknessIndex,IExitFLAG,IErr)
+          DO IThicknessValue = 1,IThicknessCount
+             
+             CALL WriteIterationOutput(ind,IThicknessValue,IStayInSimulationFLAG,IErr)
              IF(l_alert(IErr,"felixrefine","WriteIterationOutput")) CALL abort 
           END DO
        END IF

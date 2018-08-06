@@ -63,7 +63,7 @@ PROGRAM Felixrefine
        IBSMaxLocGVecAmp,ILaueLevel,INumTotalReflections,ITotalLaueZoneLevel,&
        INhkl,IExitFLAG,ICycle,INumInitReflections,IZerothLaueZoneLevel,&
        INumFinalReflections,IThicknessIndex,IVariableType,IArrayIndex,&
-       IAnisotropicDebyeWallerFactorElementNo
+       IAnisotropicDebyeWallerFactorElementNo, IStrongBeamInit
   INTEGER(IKIND) :: IStartTime,IStartTime2
   REAL(RKIND) :: RHOLZAcceptanceAngle,RLaueZoneGz,RMaxGMag,RPvecMag,&
        RScale,RMaxUgStep,Rdx,RStandardDeviation,RMean,RGzUnitVec,RMinLaueZoneValue,&
@@ -72,11 +72,11 @@ PROGRAM Felixrefine
   REAL(RKIND),DIMENSION(ITHREE) :: R3var,R3fit
   REAL(RKIND),DIMENSION(5) :: RStrongBeamSampleVec
   INTEGER(IKIND),DIMENSION(10) :: INoOfVariablesForRefinementType
-
+  INTEGER(IKIND),DIMENSION(5) :: IStrongBeamSampleVec
   ! allocatable arrays
   INTEGER(IKIND),DIMENSION(:),ALLOCATABLE :: IOriginGVecIdentifier
   REAL(RKIND),DIMENSION(:),ALLOCATABLE :: RSimplexFoM,RIndependentVariable,&
-       RCurrentVar,RVar0,RLastVar,RPvec,RFitVec,
+       RCurrentVar,RVar0,RLastVar,RPvec,RFitVec
   REAL(RKIND),DIMENSION(:,:),ALLOCATABLE :: RSimplexVariable,RgDummyVecMat,&
        RgPoolMagLaue,RTestImage,ROnes,RVarMatrix,RSimp
 
@@ -744,15 +744,15 @@ PROGRAM Felixrefine
         CALL message( LS, "Cannot do Bloch Wave Convergence with Reference Strong Beams < 50")
         CALL abort
 
-     CASE(: 50,100 :)
+     CASE(50 : 100)
         !Greater Than 50, Less Than 100      
         !Calculate the sample integer size - make it roughly half the Reference Strong Beam Value
-        CALL message( LS, "Warning: User defined Strong Beams below 100,
+        CALL message( LS, "Warning: User defined Strong Beams below 100, &
         continuing with modified sample simulation values")
         IStrongBeamInit=FLOOR(REAL(IMinStrongBeams)/10.0)
         IStrongBeamSampleVec=[IStrongBeamInit,IStrongBeamInit*2,IStrongBeamInit*3,IStrongBeamInit*4 &
              ,IStrongBeamInit*5]
-        IMinWeakBeams=IMinStrongBeam
+        IMinWeakBeams=IMinStrongBeams
 
      CASE DEFAULT
         !Greater than 100, using 50,40,30,20,10 as sample simulations
