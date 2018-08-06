@@ -274,15 +274,7 @@ CONTAINS
           END DO
        END IF
 
-       IF(my_rank.EQ.0) THEN
-          ! Write current variable list and fit to IterationLog.txt
-          CALL WriteOutVariables(ind,IErr)
-          IF(l_alert(IErr,"SimulateAndFit","WriteOutVariables")) RETURN
-       END IF
     END DO
-    !===================================== ! Send the fit index to all cores
-    CALL MPI_BCAST(RFigureofMerit,1,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,IErr)
-    !=====================================
 
   END SUBROUTINE SimulateAndConverge
   
