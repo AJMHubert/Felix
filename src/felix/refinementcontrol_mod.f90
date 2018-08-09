@@ -252,13 +252,6 @@ CONTAINS
     INTEGER(IKIND), DIMENSION(5), INTENT(IN) :: IStrongBeamSampleVec 
     CHARACTER*100 :: SFormat,SPrintString
 
-    CALL SYSTEM_CLOCK( IStartTime )
-
-    IF (my_rank.EQ.0) THEN ! send current values to screen
-       CALL PrintVariables(IErr)
-       IF(l_alert(IErr,"SimulateAndConverge","PrintVariables")) RETURN
-    END IF
-
     !Loop over the number of sample Strong beam values
     DO ind = 1, 5
        IMinStrongBeams = IStrongBeamSampleVec(ind)
