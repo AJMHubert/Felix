@@ -227,7 +227,7 @@ CONTAINS
   !>
   !! Procedure-description: Simulates and finds Bloch Wave Convergence of Pattern
   !!
-  !! Major-Authors: Alex Hubert(2018), Richard Beanland (2016)
+  !! Major-Authors: Alex Hubert(2018)
   !!  
   SUBROUTINE SimulateAndConverge(IStrongBeamSampleVec,IErr)
 
@@ -254,6 +254,9 @@ CONTAINS
 
     !Loop over the number of sample Strong beam values
     DO ind = 1, 5
+       IF(my_rank.EQ.0) THEN
+          CALL message(LS,"IMinStrongBeams(Inside Subroutine) = ", IMinStrongBeams)
+       END IF
        IMinStrongBeams = IStrongBeamSampleVec(ind)
        IMinWeakBeams = IMinStrongBeams
        ! simulate
@@ -266,7 +269,7 @@ CONTAINS
        IF(my_rank.EQ.0) THEN
           CALL message(LS,"Writing simulations with the number of thicknesses =", IThicknessCount)
           DO IThicknessValue = 1,IThicknessCount
-             
+
              CALL WriteIterationOutput(ind,IThicknessValue,IStayInSimulationFLAG,IErr)
              IF(l_alert(IErr,"felixrefine","WriteIterationOutput")) CALL abort 
           END DO

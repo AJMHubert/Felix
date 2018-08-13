@@ -748,7 +748,7 @@ PROGRAM Felixrefine
         !Greater Than 50, Less Than 100      
         !Calculate the sample integer size - make it roughly half the Reference Strong Beam Value
         CALL message( LS, "Warning: User defined Strong Beams below 100, &
-        continuing with modified sample simulation values")
+             continuing with modified sample simulation values")
         IStrongBeamInit=FLOOR(REAL(IMinStrongBeams)/10.0)
         IStrongBeamSampleVec=[IStrongBeamInit,IStrongBeamInit*2,IStrongBeamInit*3,IStrongBeamInit*4 &
              ,IStrongBeamInit*5]
@@ -807,8 +807,9 @@ PROGRAM Felixrefine
      IF(IPatternConvergeFLAG.EQ.1) THEN !Bloch wave convergence mode
         IF(my_rank.EQ.0) THEN
            CALL message(LS,"Entering Convergence Mode, PatternConvergenceFLAG = ", IPatternConvergeFLAG)
-           CALL SimulateAndConverge(IStrongBeamSampleVec,IErr) 
+           CALL message(LS,"IMinStrongBeams(Outside Subroutine) = ", IMinStrongBeams)
         END IF
+        CALL SimulateAndConverge(IStrongBeamSampleVec,IErr) 
      END IF
 
 
