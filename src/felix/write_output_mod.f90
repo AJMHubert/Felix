@@ -111,13 +111,13 @@ MODULE write_output_mod
             "I",Iter,"_",IThickness,"nm_",2*IPixelcount,"x",2*IPixelcount
       path = SChemicalFormula(1:ILN) // "_" // path ! This adds chemical to folder name
    ELSE IF (IPatternConvergeFLAG.EQ.1) THEN !Bloch Wave Convergence Output
-      WRITE(path,"(A14,I3.3,A1,I3.3,A3,I3.3,A1,I3.3)") &
-            "BlochConverge_",IMinStrongBeams,"Beams_",IThickness,"nm_",2*IPixelcount,"x",2*IPixelcount
+      WRITE(path,"(A14,I3.3,A6,I3.3,A3,I3.3,A1,I3.3)") &
+            "BlochConverge_",IMinStrongBeams,"Beams/",IThickness,"nm_",2*IPixelcount,"x",2*IPixelcount
    ELSE! Sim Output
       WRITE(path,"(A4,I3.3,A3,I3.3,A1,I3.3)") &
             "Sim_",IThickness,"nm_",2*IPixelcount,"x",2*IPixelcount
     END IF
-    CALL system('mkdir ' // path)
+    CALL system('mkdir -p ' // path)
 
     ! Write Images to disk
     DO ind = 1,INoOfLacbedPatterns
