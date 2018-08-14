@@ -275,11 +275,11 @@ MODULE write_output_mod
 
     ! global inputs
     USE IPARA, ONLY : IAbsorbFLAG, IRefineMode, INoofUgs, IUgOffset, &
-                      IRefinementVariableTypes
+         IRefinementVariableTypes
     USE RPARA, ONLY : RBasisAtomPosition, RBasisOccupancy, RBasisIsoDW, &
-                      RAnisotropicDebyeWallerFactorTensor, RFigureofMerit, &
-                      RAbsorptionPercentage, RLengthX, RLengthY, RLengthZ, RAlpha, RBeta, &
-                      RGamma, RConvergenceAngle, RAcceleratingVoltage, RRSoSScalingFactor                    
+         RAnisotropicDebyeWallerFactorTensor, RFigureofMerit, &
+         RAbsorptionPercentage, RLengthX, RLengthY, RLengthZ, RAlpha, RBeta, &
+         RGamma, RConvergenceAngle, RAcceleratingVoltage, RRSoSScalingFactor                    
     USE CPARA, ONLY : CUniqueUg
     USE IChannels, ONLY : IChOutSimplex     
 
@@ -291,95 +291,110 @@ MODULE write_output_mod
     INTEGER(IKIND),DIMENSION(IRefinementVariableTypes) :: IOutputVariables
     REAL(RKIND),DIMENSION(:),ALLOCATABLE :: RDataOut
 
-    ! Need to Determine total no. of variables to be written out
-    ! this is different from the no. of refinement variables
-    
-    IF (IAbsorbFLAG.EQ.2) THEN ! Structure Factors are complex 
-      ! so require two output variables each
-      IOutputVariables(1) = IRefineMode(1)*2*INoofUgs+1 
-      ! plus one for proportional absorption     
-    ELSE
-      IOutputVariables(1) = IRefineMode(1)*2*INoofUgs     
-    END IF
-    ! Atom Coordinates
-    IOutputVariables(2) = IRefineMode(2)*SIZE(RBasisAtomPosition,DIM=1)* &
-          SIZE(RBasisAtomPosition,DIM=2)
-    ! Occupancies
-    IOutputVariables(3) = IRefineMode(3)*SIZE(RBasisOccupancy,DIM=1) 
-    ! Isotropic Debye Waller Factors
-    IOutputVariables(4) = IRefineMode(4)*SIZE(RBasisIsoDW,DIM=1) 
-    ! Anisotropic Debye Waller Factors
-    IOutputVariables(5) = IRefineMode(5)*SIZE(RAnisotropicDebyeWallerFactorTensor)
-    IOutputVariables(6) = IRefineMode(6) * 3 ! Lattice Parameters (a,b,c) 
-    IOutputVariables(7) = IRefineMode(7) * 3 ! Lattice Angles (alpha,beta,gamma)
-    IOutputVariables(8) = IRefineMode(8) ! Convergence angle
-    IOutputVariables(9) = IRefineMode(9) ! Absorption
-    IOutputVariables(10) = IRefineMode(10) ! Accelerating Voltage
-    ITotalOutputVariables = SUM(IOutputVariables) ! Total Output
+    !We need the refinement/Simulation Output mode
+    IF(IPatternConvergeFLAG.NE.1) THEN
+       ! Need to Determine total no. of variables to be written out
+       ! this is different from the no. of refinement variables
 
-    ALLOCATE(RDataOut(ITotalOutputVariables),STAT=IErr)
-    DO jnd = 1,IRefinementVariableTypes
-      IF(IRefineMode(jnd).EQ.0) THEN
-        CYCLE ! The refinement variable type is not being refined, skip
-      END IF
-      IF(jnd.EQ.1) THEN ! It's an atom coordinate refinement
-        IStart = 1
-      ELSE
-        IStart = SUM(IOutputVariables(1:(jnd-1)))+1 
-        !?? RB there is probably a better way of doing this
-      END IF
-      IEND = SUM(IOutputVariables(1:jnd))
+       IF (IAbsorbFLAG.EQ.2) THEN ! Structure Factors are complex 
+          ! so require two output variables each
+          IOutputVariables(1) = IRefineMode(1)*2*INoofUgs+1 
+          ! plus one for proportional absorption     
+       ELSE
+          IOutputVariables(1) = IRefineMode(1)*2*INoofUgs     
+       END IF
+       ! Atom Coordinates
+       IOutputVariables(2) = IRefineMode(2)*SIZE(RBasisAtomPosition,DIM=1)* &
+            SIZE(RBasisAtomPosition,DIM=2)
+       ! Occupancies
+       IOutputVariables(3) = IRefineMode(3)*SIZE(RBasisOccupancy,DIM=1) 
+       ! Isotropic Debye Waller Factors
+       IOutputVariables(4) = IRefineMode(4)*SIZE(RBasisIsoDW,DIM=1) 
+       ! Anisotropic Debye Waller Factors
+       IOutputVariables(5) = IRefineMode(5)*SIZE(RAnisotropicDebyeWallerFactorTensor)
+       IOutputVariables(6) = IRefineMode(6) * 3 ! Lattice Parameters (a,b,c) 
+       IOutputVariables(7) = IRefineMode(7) * 3 ! Lattice Angles (alpha,beta,gamma)
+       IOutputVariables(8) = IRefineMode(8) ! Convergence angle
+       IOutputVariables(9) = IRefineMode(9) ! Absorption
+       IOutputVariables(10) = IRefineMode(10) ! Accelerating Voltage
+       ITotalOutputVariables = SUM(IOutputVariables) ! Total Output
 
-      SELECT CASE(jnd)
-      CASE(1)
-        DO ind = 1,INoofUgs
-           IStart = (ind*2)-1
-           IEnd = ind*2
-           RDataOut(IStart:IEnd) = [REAL(CUniqueUg(ind+IUgOffset)), &
-                  REAL(AIMAG(CUniqueUg(ind+IUgOffset)),RKIND)]
-        END DO
-        RDataOut(IEnd+1) = RAbsorptionPercentage!RB last variable is absorption
-      CASE(2)
-        RDataOut(IStart:IEnd) = &
-              RESHAPE(TRANSPOSE(RBasisAtomPosition),SHAPE(RDataOut(IStart:IEnd)))
-      CASE(3)
-        RDataOut(IStart:IEnd) = RBasisOccupancy
-      CASE(4)
-        RDataOut(IStart:IEnd) = RBasisIsoDW
-      CASE(5)
-        RDataOut(IStart:IEnd) = &
-              RESHAPE(RAnisotropicDebyeWallerFactorTensor,SHAPE(RDataOut(IStart:IEnd)))
-      CASE(6)
-        RDataOut(IStart:IEnd) = [RLengthX, RLengthY, RLengthZ]
-      CASE(7)
-        RDataOut(IStart:IEnd) = [RAlpha, RBeta, RGamma]
-      CASE(8)
-        RDataOut(IStart:IEnd) = RConvergenceAngle
-      CASE(9)
-        RDataOut(IStart:IEnd) = RAbsorptionPercentage
-      CASE(10)
-        RDataOut(IStart:IEnd) = RAcceleratingVoltage
-      CASE(11)
-        RDataOut(IStart:IEnd) = RRSoSScalingFactor
-      CASE(12)
-          DO ind = 1,INoofUgs
-             IStart = (ind*2)-1
-             IEnd = ind*2
-             RDataOut(IStart:IEnd) = &
-                  [REAL(CUniqueUg(ind+IUgOffset)), REAL(AIMAG(CUniqueUg(ind+IUgOffset)),RKIND)]
-          END DO
-          IF (IAbsorbFLAG.EQ.1) THEN
-            RDataOut(IEnd+1) = RAbsorptionPercentage 
-            ! RB last variable is proportional absorption
+       ALLOCATE(RDataOut(ITotalOutputVariables),STAT=IErr)
+       DO jnd = 1,IRefinementVariableTypes
+          IF(IRefineMode(jnd).EQ.0) THEN
+             CYCLE ! The refinement variable type is not being refined, skip
           END IF
-      END SELECT
-    END DO
+          IF(jnd.EQ.1) THEN ! It's an atom coordinate refinement
+             IStart = 1
+          ELSE
+             IStart = SUM(IOutputVariables(1:(jnd-1)))+1 
+             !?? RB there is probably a better way of doing this
+          END IF
+          IEND = SUM(IOutputVariables(1:jnd))
+
+          SELECT CASE(jnd)
+          CASE(1)
+             DO ind = 1,INoofUgs
+                IStart = (ind*2)-1
+                IEnd = ind*2
+                RDataOut(IStart:IEnd) = [REAL(CUniqueUg(ind+IUgOffset)), &
+                     REAL(AIMAG(CUniqueUg(ind+IUgOffset)),RKIND)]
+             END DO
+             RDataOut(IEnd+1) = RAbsorptionPercentage!RB last variable is absorption
+          CASE(2)
+             RDataOut(IStart:IEnd) = &
+                  RESHAPE(TRANSPOSE(RBasisAtomPosition),SHAPE(RDataOut(IStart:IEnd)))
+          CASE(3)
+             RDataOut(IStart:IEnd) = RBasisOccupancy
+          CASE(4)
+             RDataOut(IStart:IEnd) = RBasisIsoDW
+          CASE(5)
+             RDataOut(IStart:IEnd) = &
+                  RESHAPE(RAnisotropicDebyeWallerFactorTensor,SHAPE(RDataOut(IStart:IEnd)))
+          CASE(6)
+             RDataOut(IStart:IEnd) = [RLengthX, RLengthY, RLengthZ]
+          CASE(7)
+             RDataOut(IStart:IEnd) = [RAlpha, RBeta, RGamma]
+          CASE(8)
+             RDataOut(IStart:IEnd) = RConvergenceAngle
+          CASE(9)
+             RDataOut(IStart:IEnd) = RAbsorptionPercentage
+          CASE(10)
+             RDataOut(IStart:IEnd) = RAcceleratingVoltage
+          CASE(11)
+             RDataOut(IStart:IEnd) = RRSoSScalingFactor
+          CASE(12)
+             DO ind = 1,INoofUgs
+                IStart = (ind*2)-1
+                IEnd = ind*2
+                RDataOut(IStart:IEnd) = &
+                     [REAL(CUniqueUg(ind+IUgOffset)), REAL(AIMAG(CUniqueUg(ind+IUgOffset)),RKIND)]
+             END DO
+             IF (IAbsorbFLAG.EQ.1) THEN
+                RDataOut(IEnd+1) = RAbsorptionPercentage 
+                ! RB last variable is proportional absorption
+             END IF
+          END SELECT
+       END DO
+
+    ELSE
+
+       ITotalOutputVariables=INT(4,IKIND)
+
+       ALLOCATE(RDataOut(ITotalOutputVariables),STAT=IErr)
+       RDataOut(1)=RMaximumDifferenceMontage(Iter,IThicknessValue)
+       RDataOut(2)=RMaximumDifferenceMontageLocation(Iter,IThicknessValue)
+       RDataOut(3)=RMaximumDifferenceReflection(Iter,IThicknessValue,IReflection)
+       RDataOut(4)=RMaximumDifferenceReflextionLocation(Iter,IThicknessValue,IReflection)
+          
+
+    END IF
 
     WRITE(STotalOutputVariables,*) ITotalOutputVariables
     WRITE(SFormat,*) "(I5.1,1X,F13.9,1X,"//TRIM(ADJUSTL(STotalOutputVariables))//"(F13.9,1X))"
 
     OPEN(UNIT=IChOutSimplex,FILE='iteration_log.txt',FORM='formatted',STATUS='unknown',&
-          POSITION='append')
+         POSITION='append')
     WRITE(UNIT=IChOutSimplex,FMT=SFormat) Iter-1,RFigureofMerit,RDataOut
     CLOSE(IChOutSimplex)
 

@@ -271,9 +271,33 @@ CONTAINS
           DO IThicknessValue = 1,IThicknessCount
 
              CALL WriteIterationOutput(ind,IThicknessValue,IStayInSimulationFLAG,IErr)
-             IF(l_alert(IErr,"felixrefine","WriteIterationOutput")) CALL abort 
+             IF(l_alert(IErr,"felixrefine","WriteIterationOutput")) CALL abort
+             
+             !Get our differences per pixel from the reference to the current simulation (Either whole montage
+             !- or per individual reflection) - this type of operation is what FORTRAN is good at, very easy syntax
+             RImageSimMontageDifference(ind,:,:,:,IThicknessValue)=&
+                  RRImageSimReference(:,:,:,IThicknessValue)-RImageSimi(:,:,:,IThicknessValue)
+
+             RMaximumDifferenceMontage(ind,IThicknessValue)=&
+                  MAX(RImageSimMontageDifference(ind,:,:,:,IThicknessValue))
+             RMaximumDifferenceMontageLocation(ind,IThicknessValue)=&
+                  MAXLOC(RImageSimMontageDifference(ind,:,:,:,IThicknessValue))
+
+             DO IReflection=1,INoOfLacbedPatterns
+                RImageSimReflectionDifference(ind,:,:,IReflection,IThicknessValue)=&
+                     RRImageSimReference(:,:,IReflection,IThicknessValue)-RImageSimi(:,:,IReflection,IThicknessValue)
+
+                RMaximumDifferenceReflection(ind,IThicknessValue,IReflection)=&
+                     MAX(RImageSimReflectionDifference(ind,:,:,IReflection,IThicknessValue))
+                RMaximumDifferenceReflectionLocation(ind,IThicknessValue,IReflection)=&
+                     MAXLOC(RImageSimReflectionDifference(ind,:,:,IReflection,IThicknessValue))
+
+             END DO
           END DO
        END IF
+
+
+
 
     END DO
 

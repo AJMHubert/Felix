@@ -805,6 +805,7 @@ PROGRAM Felixrefine
      !--------------------------------------------------------------------
 
      IF(IPatternConvergeFLAG.EQ.1) THEN !Bloch wave convergence mode
+        RImageSimReference=RImageSimi !The first simulation is the reference which we save
         IF(my_rank.EQ.0) THEN
            CALL message(LS,"Entering Convergence Mode, PatternConvergenceFLAG = ", IPatternConvergeFLAG)
            CALL message(LS,"IMinStrongBeams(Outside Subroutine) = ", IMinStrongBeams)
