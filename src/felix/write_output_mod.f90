@@ -377,26 +377,48 @@ MODULE write_output_mod
           END SELECT
        END DO
 
+
+       WRITE(STotalOutputVariables,*) ITotalOutputVariables
+       WRITE(SFormat,*) "(I5.1,1X,F13.9,1X,"//TRIM(ADJUSTL(STotalOutputVariables))//"(F13.9,1X))"
+
+       OPEN(UNIT=IChOutSimplex,FILE='iteration_log.txt',FORM='formatted',STATUS='unknown',&
+            POSITION='append')
+       WRITE(UNIT=IChOutSimplex,FMT=SFormat) Iter-1,RFigureofMerit,RDataOut
+       CLOSE(IChOutSimplex)
+
     ELSE
 
-       ITotalOutputVariables=INT(4,IKIND)
+       ITotalOutputVariables=INT(6,IKIND)
 
        ALLOCATE(RDataOut(ITotalOutputVariables),STAT=IErr)
        RDataOut(1)=RMaximumDifferenceMontage(Iter,IThicknessValue)
        RDataOut(2)=RMaximumDifferenceMontageLocation(Iter,IThicknessValue)
        RDataOut(3)=RMaximumDifferenceReflection(Iter,IThicknessValue,IReflection)
        RDataOut(4)=RMaximumDifferenceReflextionLocation(Iter,IThicknessValue,IReflection)
-          
 
+       WRITE(SMinStrongBeams,*) IMinStrongBeams
+       WRITE(SLogName,*) "Converge_"//TRIM(ADJUSTL(SMinStrongBeams))//"log.txt"
+       WRITE(STotalOutputVariables,*) ITotalOutputVariables
+       WRITE(SFormat,*) "(I5.1,1X,F13.9,1X,"//TRIM(ADJUSTL(STotalOutputVariables))//"(F13.9,1X))"
+
+       WRITE(STotalLacbedPatterns,*)INoOfLacbedPatterns
+       WRITE(STotalLacbedPatternsONE,*)INoOfLacbedPatterns+1
+       DO ind=1,INoOfLacbedPatterns
+          WRITE(Sind,*)! will replace here with the actual hkl index
+          SLacbedPatternPath(ind)=Sind
+       END DO
+       
+       OPEN(UNIT=IChOutSimplex,FILE=SLogName,FORM='formatted',STATUS='unknown',&
+            POSITION='append')
+       WRITE(UNIT=IChOutSimplex,FMT="(A9,1X,A26,1X"//TRIM(ADJUSTL(STotalLAcbedPatterns))//"(A26,1X)")&
+            "Thickness","Montage",SLacbedPatternPath
+       WRITE(UNIT=IChOutSimplex,FMT=TRIM(ADJUSTL(STotalLAcbedPatternsONE))//"(9X,A1,A13,A1,A13,A1")&
+            "|","Location","|","Value","|"
+       WRITE(UNIT=IChOutSimplex,FMT=SFormat) Iter,RDataOut
+       CLOSE(IChOutSimplex)
     END IF
 
-    WRITE(STotalOutputVariables,*) ITotalOutputVariables
-    WRITE(SFormat,*) "(I5.1,1X,F13.9,1X,"//TRIM(ADJUSTL(STotalOutputVariables))//"(F13.9,1X))"
 
-    OPEN(UNIT=IChOutSimplex,FILE='iteration_log.txt',FORM='formatted',STATUS='unknown',&
-         POSITION='append')
-    WRITE(UNIT=IChOutSimplex,FMT=SFormat) Iter-1,RFigureofMerit,RDataOut
-    CLOSE(IChOutSimplex)
 
   END SUBROUTINE WriteOutVariables
 

@@ -272,7 +272,7 @@ CONTAINS
 
              CALL WriteIterationOutput(ind,IThicknessValue,IStayInSimulationFLAG,IErr)
              IF(l_alert(IErr,"felixrefine","WriteIterationOutput")) CALL abort
-             
+
              !Get our differences per pixel from the reference to the current simulation (Either whole montage
              !- or per individual reflection) - this type of operation is what FORTRAN is good at, very easy syntax
              RImageSimMontageDifference(ind,:,:,:,IThicknessValue)=&
@@ -294,6 +294,8 @@ CONTAINS
 
              END DO
           END DO
+          CALL WriteOutVariables(ind,IErr)
+          IF(l_alert(IErr,"felixrefine","WriteOutVariables")) CALL abort
        END IF
 
 
